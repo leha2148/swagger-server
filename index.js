@@ -4,16 +4,12 @@ const fs = require('fs'),
     path = require('path'),
     http = require('http');
 
-
+const process = require('process');
 const appConnect = require('connect')();
 const swaggerTools = require('swagger-tools');
 const jsyaml = require('js-yaml');
-const serverPort = 3001;
+const serverPort = process.env.PORT || 3001;
 
-// Получаем процесс для иммитации переменных среды
-const process = require('process');
-
-// [START gae_flex_postgres_app]
 const Knex = require('knex');
 const yaml_conf = require('yaml-config');
 const settings = yaml_conf.readConfig('./config.yaml', 'env_variables');
@@ -44,14 +40,11 @@ function connect() {
         config.host = `/cloudsql/${settings.INSTANCE_CONNECTION_NAME}`;
     }
 
-    // Подключение к базе данных
-    const knex = Knex({
+    // Данные подключения к БД
+    return Knex({
         client: 'pg',
         connection: config
     });
-    // [END gae_flex_postgres_connect]
-
-    return knex;
 }
 
 // Initialize the Swagger middleware

@@ -2,8 +2,8 @@
 
 const MethodDB = require('../db_method/MethodClient');
 const knex = require('../index').knex;
-var webshot = require('webshot');
-var uniqid = require('uniqid');
+const webshot = require('webshot');
+const uniqid = require('uniqid');
 
 /**
  * Создание диалога (НЕ привязанного к заявке) клиентом
@@ -12,19 +12,41 @@ var uniqid = require('uniqid');
  * returns inline_response_200_8
  **/
 exports.clientSetDialog = function (cli_id) {
-    return new Promise(function (resolve, reject) {
-        var examples = {};
-        examples['application/json'] = {
-            "dlg_id": 4,
-            "status": "OK"
+
+    const TAG = "clientSetDialog";
+
+    const this_dialog = {
+        cli_id: cli_id,
+        dlg_begindt: new Date()
+    };
+
+    return new Promise(function (resolve) {
+        const result = {};
+        result['application/json'] = {
+            "dlg_id": null,
+            "status": "SERVER ERROR"
         };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
-        }
+
+        MethodDB.insertDialog(knex, this_dialog)
+            .then((res) => {
+                console.log(TAG + " -> result: good");
+                result['application/json'] = {
+                    "dlg_id": res[0],
+                    "status": "OK"
+                };
+            })
+            .catch((err) => {
+                console.error(TAG + " -> result: " + err);
+                result['application/json'] = {
+                    "dlg_id": null,
+                    "status": "ERROR"
+                };
+            })
+            .finally(() => {
+                resolve(result[Object.keys(result)[0]]);
+            });
     });
-}
+};
 
 
 /**
@@ -35,6 +57,8 @@ exports.clientSetDialog = function (cli_id) {
  * returns inline_response_200_11
  **/
 exports.getClient = function (body, IP) {
+    const TAG = "getClient";
+
     // Создание записи посещения для хранения в БД
     const this_cilent =
         {
@@ -60,28 +84,29 @@ exports.getClient = function (body, IP) {
         try {
             MethodDB.insertClient(knex, this_cilent)
                 .then((res) => {
+                    console.error(TAG + " -> result: good");
                     result['application/json'] = {
                         "cli_id": res[0],
                         "status": "OK"
                     };
                 })
                 .catch((err) => {
+                    console.error(TAG + " -> result: " + err);
                     result['application/json'] = {
                         "cli_id": null,
                         "status": "ERROR"
                     };
                 })
                 .finally(() => {
-                    console.log("getClient -> result: " + result[Object.keys(result)[0]]);
                     resolve(result[Object.keys(result)[0]]);
                 });
         }
-        catch (e) {
+        catch (err) {
             result['application/json'] = {
                 "cli_id": null,
                 "status": "SERVER ERROR"
             };
-            console.log("getClient -> result: " + result[Object.keys(result)[0]]);
+            console.error(TAG + " -> result: " + err);
             reject(result[Object.keys(result)[0]]);
         }
     });
@@ -96,6 +121,8 @@ exports.getClient = function (body, IP) {
  * returns inline_response_200_10
  **/
 exports.getScreen = function (uRL, host) {
+    const TAG = "getScreen";
+
     const options = {
         streamType: 'png',
         windowSize: {
@@ -116,16 +143,18 @@ exports.getScreen = function (uRL, host) {
         "status": "SERVER ERROR"
     };
 
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         webshot(uRL, "./public/" + imgName + "." + options.streamType, options, (err) => {
             if (err) {
-                console.error(err);
+                console.error(TAG + " -> result: " + err);
                 result['application/json'] = {
                     "imgsource": null,
                     "status": "ERROR"
                 };
+
                 resolve(result[Object.keys(result)[0]]);
             }
+            console.log(TAG + " -> result: good");
             result['application/json'] = {
                 "imgsource": host + "/public/" + imgName + "." + options.streamType,
                 "status": "OK"
@@ -144,19 +173,42 @@ exports.getScreen = function (uRL, host) {
  * returns inline_response_200_8
  **/
 exports.setDialogForRqt = function (body) {
-    return new Promise(function (resolve, reject) {
-        var examples = {};
-        examples['application/json'] = {
-            "dlg_id": 4,
-            "status": "OK"
+    const TAG = "setDialogForRqt";
+
+    const this_dialog = {
+        cli_id: body.cli_id,
+        dlg_begindt: new Date()
+    };
+
+    return new Promise(function (resolve) {
+        const result = {};
+        result['application/json'] = {
+            "dlg_id": null,
+            "status": "SERVER ERROR"
         };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
-        }
+
+        MethodDB.insertDialog(knex, this_dialog)
+            .then((res) => MethodDB.updRequestDlg(knex, res[0], body.rqt_id))
+            .then((res) => {
+                if(res.length === 0) throw new Error("Invalid update parameter dlg_id for request");
+                console.log(TAG + " -> result: good");
+                result['application/json'] = {
+                    "dlg_id": res[0],
+                    "status": "OK"
+                };
+            })
+            .catch((err) => {
+                console.error(TAG + " -> result: " + err);
+                result['application/json'] = {
+                    "dlg_id": null,
+                    "status": "ERROR"
+                };
+            })
+            .finally(() => {
+                resolve(result[Object.keys(result)[0]]);
+            });
     });
-}
+};
 
 
 /**
@@ -167,17 +219,54 @@ exports.setDialogForRqt = function (body) {
  * returns inline_response_200_12
  **/
 exports.setRequest = function (body) {
-    return new Promise(function (resolve, reject) {
-        var examples = {};
-        examples['application/json'] = {
-            "rqt_id": 3,
-            "status": "OK"
+    const TAG = "setRequest";
+
+    const this_request =
+        {
+            cli_id: body.cli_id,
+            rqt_url: body.rqt_url,
+            rqt_comment: body.rqt_comment,
+            rqt_imgsource: body.rqt_imgsource,
+            rqt_dt: new Date(),
+            rqt_blockedstatus: 0,
+            rqt_status: 0
         };
-        if (Object.keys(examples).length > 0) {
-            resolve(examples[Object.keys(examples)[0]]);
-        } else {
-            resolve();
+
+    return new Promise(function (resolve, reject) {
+        const result = {};
+        result['application/json'] = {
+            "rqt_id": null,
+            "status": "SERVER ERROR"
+        };
+
+        try {
+            MethodDB.insertRequest(knex, this_request)
+                .then((res) => {
+                    console.log(TAG + " -> result: good");
+                    result['application/json'] = {
+                        "rqt_id": res[0],
+                        "status": "OK"
+                    };
+                })
+                .catch((err) => {
+                    console.error(TAG + " -> result: " + err);
+                    result['application/json'] = {
+                        "rqt_id": null,
+                        "status": "ERROR"
+                    };
+                })
+                .finally(() => {
+                    resolve(result[Object.keys(result)[0]]);
+                });
+        }
+        catch (err) {
+            result['application/json'] = {
+                "rqt_id": null,
+                "status": "SERVER ERROR"
+            };
+            console.error(TAG + " -> result: " + err);
+            reject(result[Object.keys(result)[0]]);
         }
     });
-}
+};
 
