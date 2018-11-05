@@ -1,0 +1,1166 @@
+swagger: '2.0'
+info:
+  description: API проекта "Голос поколения" для РКН и УМВД Липецкой области.
+  version: 1.0.0
+  title: API Voice Generation
+  contact:
+    email: antony.nor@yandex.ru
+host: 'voice-gen-220-900.appspot.com'
+basePath: /
+tags:
+  - name: global
+    description: Общие запросы для всех
+  - name: admin/volunteer
+    description: Общие запросы для админа и волонтера
+  - name: client
+    description: Запросы от клиента
+  - name: volunteer
+    description: Запросы от волонтера
+  - name: admin
+    description: Запросы от администратора
+schemes:
+  - https
+  - http
+paths:
+  #
+  # Global
+  #
+  /public/{imgName}:
+      x-swagger-router-controller: Global
+      get:
+        tags:
+          - global
+        summary: Возвращает картинку из папки public
+        operationId: publicGetImg
+        produces:
+          - image/png
+        parameters:
+          - in: path
+            name: imgName
+            required: true
+            type: string
+            description: Имя картинки
+        responses:
+          200:
+            description: OK
+            schema:
+              type: file
+              description: Возвращаемая картинка в png
+          400:
+            description: Invalid data
+  /sendMsg:
+    x-swagger-router-controller: Global
+    post:
+      tags:
+        - global
+      summary: Отправить сообщение
+      operationId: sendMsg
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ID диалога, ID отправителя и текст сообщения
+          required: true
+          schema:
+            type: object
+            required:
+              - dlg_id
+              - sender_id
+              - msg_text
+            properties:
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+              sender_id:
+                type: integer
+                format: int32
+                example: 1
+              msg_text:
+                type: string
+                example: >-
+                  Здравстуйте! Подскажите, пожалуйста, лучший наркологический
+                  диспансер в Липецке
+            xml:
+              name: parametres
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              msg_id:
+                type: integer
+                format: int32
+                example: 5
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /getLastMsg:
+    x-swagger-router-controller: Global
+    post:
+      tags:
+        - global
+      summary: Получить последнее сообщение в диалоге
+      operationId: getLastMsg
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ID диалога и ID отправителя
+          required: true
+          schema:
+            type: object
+            required:
+              - dlg_id
+              - sender_id
+            properties:
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+              sender_id:
+                type: integer
+                format: int32
+                example: 1
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              array_msg:
+                type: array
+                items:
+                  $ref: '#/definitions/message'
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /getDialogMsgs:
+    x-swagger-router-controller: Global
+    post:
+      tags:
+        - global
+      summary: Получить все сообщения диалога
+      operationId: getDialogMsgs
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ID диалога и ID отправителя
+          required: true
+          schema:
+            type: object
+            required:
+              - dlg_id
+              - sender_id
+            properties:
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+              sender_id:
+                type: integer
+                format: int32
+                example: 1
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              array_msg:
+                type: array
+                items:
+                  $ref: '#/definitions/message'
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /getDialogInfo:
+    x-swagger-router-controller: Global
+    post:
+      tags:
+        - global
+      summary: Получить информацию о диалоге
+      operationId: getDialogInfo
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ID диалога и ID отправителя
+          required: true
+          schema:
+            type: object
+            required:
+              - dlg_id
+              - sender_id
+            properties:
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+              sender_id:
+                type: integer
+                format: int32
+                example: 1
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              interlocutor:
+                type: string
+                example: Петров Александр
+              role:
+                type: string
+                example: Volunteer
+              last_msg:
+                $ref: '#/definitions/message'
+              create_dt:
+                type: string
+                format: date-time
+                example: '2018-11-04T00:42:36-03:00'
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  
+  #
+  # Admin/Volunteer
+  #
+  /login:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Авторизация в системе для администраторов и волонтеров
+      operationId: login
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: email пользователя и хеш пароля
+          required: true
+          schema:
+            type: object
+            required:
+              - email
+              - hashpass
+            properties:
+              email:
+                type: string
+                example: sergienko@gmail.com
+              hashpass:
+                type: string
+                example: '93ab60127ca9c4fe7e0922ddddf91876'
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              vol_id:
+                type: integer
+                format: int32
+                example: 2
+              vol_name:
+                type: string
+                example: Сергиенко Дмитрий Владимирович
+              vol_admin:
+                type: boolean
+                example: false
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /getListDialogs:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Получить список диалогов с информацией о них (с теми, у которые никто не обслуживает, но при этом они не привязаны к заявке)
+      operationId: getListDialogs
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: sender_id
+          in: query
+          description: 'ID пользователя, чьи диалоги необходимо получить'
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+            - status
+            properties:
+              status:
+                type: string
+                example: OK
+              list_dialogs:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - dlg_id
+                      - interlocutor
+                      - role
+                      - last_msg
+                      - create_dt
+                    properties:
+                      dlg_id:
+                        type: integer
+                        format: int32
+                        example: 4
+                      interlocutor: # Собеседник
+                        type: string
+                        example: Петров Александр
+                      role:
+                        type: string
+                        example: Volunteer
+                      last_msg:
+                        $ref: '#/definitions/message'
+                      create_dt:
+                        type: string
+                        format: date-time
+                        example: '2018-11-04T01:55:36-03:00'
+                    xml:
+                      name: dialog_info
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /getAllQuotes:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Получить список цитат с подробной информацией
+      operationId: getAllQuotes
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              array_qot:
+                type: array
+                items:
+                  $ref: '#/definitions/quote'
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /setQuote:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Создать цитату
+      operationId: setQuote
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Данные цитаты
+          required: true
+          schema:
+            type: object
+            required:
+              - qot_text
+              - qot_imgsource
+            properties:
+              qot_text:
+                type: string
+                example: Ад пуст. Все бесы здесь.
+              qot_author:
+                type: string
+                example: Уильям Шекспир
+              qot_textvisibility:
+                type: boolean
+                example: true;
+              qot_imgsource:
+                type: string
+                example: 'http://voice-gen-220-900.appspot.com/quote1.jpg'
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              qot_id:
+                type: integer
+                format: int32
+                example: 6
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /delQuote:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Удалить цитату
+      operationId: delQuote
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: qot_id
+          in: query
+          description: 'ID цитаты'
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /updQuote:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Обновить цитату
+      operationId: updQuote
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Данные цитаты
+          required: true
+          schema:
+            type: object
+            required:
+              - qot_id
+            properties:
+              qot_id:
+                type: integer
+                format: int32
+                example: 6
+              qot_text:
+                type: string
+                example: Ад пуст. Все бесы здесь.
+              qot_author:
+                type: string
+                example: Уильям Шекспир
+              qot_textvisibility:
+                type: boolean
+                example: true;
+              qot_imgsource:
+                type: string
+                example: 'http://voice-gen-220-900.appspot.com/quote1.jpg'
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /setDialog:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: 'Создание диалога'
+      operationId: setDialog
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ID волонтеров (администратор относится к волонтерам), которые будут задействованы в диалоге
+          required: true
+          schema:
+            type: object
+            required:
+              - vol1_id
+              - vol2_id
+            properties:
+              vol1_id:
+                type: integer
+                format: int32
+                example: 2
+              vol2_id:
+                type: integer
+                format: int32
+                example: 8
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /uploadImg:
+    x-swagger-router-controller: Adminvolunteer
+    post:
+      tags:
+        - admin/volunteer
+      summary: Получить загрузить картинку
+      operationId: uploadImg
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: formData
+          name: upfile
+          type: file
+          description: Файл для загрузки (картинка)
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              imgUrl:
+                type: string
+                example: 'https://pp.userapi.com/c851528/v851528769/352b7/bGRSJ7rmJR0.jpg'
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+        '404':
+          description: Not found
+
+  #
+  # Client
+  #
+  /getScreen:
+    x-swagger-router-controller: Client
+    post:
+      tags:
+        - client
+      summary: Получить скриншот от сервера
+      description: ''
+      operationId: getScreen
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: URL
+          in: query
+          description: 'URL ресурса, скриншот которого необходимо получить'
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              imgsource:
+                type: string
+                example: 'https://pp.userapi.com/c849036/v849036050/aa070/1kG0X3JXkfE.jpg'
+            xml:
+              name: response
+        '400':
+          description: Invalid URL
+  /getClient:
+    x-swagger-router-controller: Client
+    post:
+      tags:
+        - client
+      summary: Создать клиента и получить его ID
+      description: ''
+      operationId: getClient
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Данные клиента
+          required: true
+          schema:
+            $ref: '#/definitions/client'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              cli_id:
+                type: integer
+                format: int32
+                example: 1
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /setRequest:
+    x-swagger-router-controller: Client
+    post:
+      tags:
+        - client
+      summary: Создать заявку по ID клиента
+      description: ''
+      operationId: setRequest
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Данные заявки
+          required: true
+          schema:
+            $ref: '#/definitions/request'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              rqt_id:
+                type: integer
+                format: int32
+                example: 3
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /client/setDialog:
+    x-swagger-router-controller: Client
+    post:
+      tags:
+        - client
+      summary: 'Создание диалога (НЕ привязанного к заявке) клиентом'
+      operationId: clientSetDialog
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: cli_id
+          in: query
+          description: ID клиента
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  /setDialogForRqt:
+    x-swagger-router-controller: Client
+    post:
+      tags:
+        - client
+      summary: 'Создание диалога, привязанного к заявке'
+      operationId: setDialogForRqt
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ID запроса и ID клиента
+          required: true
+          schema:
+            type: object
+            required:
+              - rqt_id
+              - cli_id
+            properties:
+              rqt_id:
+                type: integer
+                format: int32
+                example: 3
+              cli_id:
+                type: integer
+                format: int32
+                example: 1
+            xml:
+              name: parameters
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              dlg_id:
+                type: integer
+                format: int32
+                example: 4
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+  
+  #
+  # Volunteer
+  #
+  /getRequest:
+    x-swagger-router-controller: Volunteer
+    post:
+      tags:
+        - volunteer
+      summary: Получить необработанную заявку
+      operationId: getRequest
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: OK
+              request_data:
+                $ref: '#/definitions/requestWithClient'
+            xml: 
+              name: response
+  
+  #
+  # Admin
+  #
+  /registration:
+    x-swagger-router-controller: Admin
+    post:
+      tags:
+        - admin
+      summary: 'Регистрация волонтера или нового администратора'
+      operationId: registration
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: 'Данные волонтера/администратора'
+          required: true
+          schema:
+            $ref: '#/definitions/volunteer'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            required:
+              - status
+            properties:
+              status:
+                type: string
+                example: 'OK'
+              vol_id:
+                type: integer
+                format: int32
+                example: 2
+              vol_name:
+                type: string
+                example: 'Сергиенко Дмитрий Владимирович'
+              vol_admin:
+                type: boolean
+                example: false
+            xml:
+              name: response
+        '400':
+          description: Invalid data
+
+definitions:
+  client:
+    type: object
+    properties:
+      cli_fullname:
+        type: string
+        example: 'Смоленцев Игорь Сергеевич'
+      cli_email:
+        type: string
+        example: 'smolencev@gmail.com'
+      cli_phone:
+        type: string
+        example: '9204001000'
+      cli_address:
+        type: string
+        example: 'г. Липецк, ул. 60 лет СССР, д. 13, кв. 7'
+      cli_passeries:
+        type: integer
+        format: int32
+        example: 1122
+      cli_pasnumber:
+        type: integer
+        format: int32
+        example: 122133
+      cli_pasissued:
+        type: string
+        example: >-
+          отделом УФМС России по Липецкой области в Советском округе гор.
+          Липецка
+      cli_pasdateissued:
+        type: string
+        format: date
+        example: '2018-11-04'
+      cli_pasdeviscode:
+        type: integer
+        format: int32
+        example: 333111
+    xml:
+      name: client
+  volunteer:
+    type: object
+    required:
+      - vol_fullname
+      - vol_email
+      - vol_hashpass
+      - vol_phone
+      - vol_address
+      - vol_passeries
+      - vol_pasnumber
+      - vol_pasissued
+      - vol_pasdateissued
+      - vol_pasdeviscode
+      - vol_admin
+    properties:
+      vol_fullname:
+        type: string
+        example: 'Сергиенко Дмитрий Владимирович'
+      vol_email:
+        type: string
+        example: 'sergienko@gmail.com'
+      vol_hashpass:
+        type: string
+        example: '93ab60127ca9c4fe7e0922ddddf91876'
+      vol_phone:
+        type: string
+        example: '9133501111'
+      vol_address:
+        type: string
+        example: 'г. Липецк, ул. Космонавтов, д. 11, кв. 35'
+      vol_passeries:
+        type: integer
+        format: int32
+        example: 1002
+      vol_pasnumber:
+        type: integer
+        format: int32
+        example: 135544
+      vol_pasissued:
+        type: string
+        example: >-
+          отделом УФМС России по Липецкой области в Советском округе гор.
+          Липецка
+      vol_pasdateissued:
+        type: string
+        format: date
+        example: '2018-10-30'
+      vol_pasdeviscode:
+        type: integer
+        format: int32
+        example: 222101
+      vol_admin:
+        type: boolean
+        example: false
+    xml:
+      name: volunteer
+  request:
+    type: object
+    required:
+      - cli_id
+      - rqt_url
+      - rqt_imgsource
+    properties:
+      cli_id:
+        type: integer
+        format: int32
+        example: 1
+      rqt_url:
+        type: string
+        example: 'https://www.postgresql.org/docs/9.1/static/datatype-numeric.html'
+      rqt_comment:
+        type: string
+        example: 'Там нужен пароль при входе P@ss и логин Coco'
+      rqt_imgsource:
+        type: string
+        example: 'http://voice-gen-220-900.appspot.com/screen1.jpg'
+    xml:
+      name: request
+  requestWithClient:
+    type: object
+    required:
+      - client
+      - rqt_url
+      - rqt_imgsource
+    properties:
+      client:
+        $ref: '#/definitions/client'
+      rqt_url:
+        type: string
+        example: 'https://www.postgresql.org/docs/9.1/static/datatype-numeric.html'
+      rqt_comment:
+        type: string
+        example: 'Там нужен пароль при входе P@ss и логин Coco'
+      rqt_imgsource:
+        type: string
+        example: 'http://voice-gen-220-900.appspot.com/screen1.jpg'
+    xml:
+      name: requestWithClient
+  message:
+    type: object
+    required:
+      - msg_id
+      - msg_text
+      - msg_fromyou
+      - msg_dt
+    properties:
+      msg_id:
+        type: integer
+        format: int32
+        example: 5
+      msg_text:
+        type: string
+        example: >-
+          Здравстуйте! Подскажите, пожалуйста, лучший наркологический диспансер
+          в Липецке
+      msg_fromyou:
+        type: boolean
+        example: true
+      msg_dt:
+        type: string
+        format: date-time
+        example: '2018-11-04T00:42:36-03:00'
+    xml:
+      name: message
+  quote:
+    type: object
+    required:
+      - qot_id
+      - qot_text
+      - qot_textvisibility
+      - qot_imgsource
+      - qot_countlikes
+      - qot_countshare
+    properties:
+      qot_id:
+        type: integer
+        format: int32
+        example: 6
+      qot_text:
+        type: string
+        example: 'Ад пуст. Все бесы здесь.'
+      qot_author:
+        type: string
+        example: 'Уильям Шекспир'
+      qot_textvisibility:
+        type: boolean
+        example: true;
+      qot_imgsource:
+        type: string
+        example: 'http://voice-gen-220-900.appspot.com/quote1.jpg'
+      qot_countlikes:
+        type: integer
+        format: int16
+        example: 0
+      qot_countshare:
+        type: integer
+        format: int16
+        example: 0
+    xml:
+      name: quote
