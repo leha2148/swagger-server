@@ -12,13 +12,13 @@ const serverPort = process.env.PORT || 3001;
 
 const Knex = require('knex');
 const yaml_conf = require('yaml-config');
-const settings = yaml_conf.readConfig('./config.yaml', 'env_variables');
+const settings = yaml_conf.readConfig('./app.yaml', 'env_variables');
 
 // swaggerRouter configuration
 const options = {
     swaggerUi: path.join(__dirname, '/swagger.json'),
     controllers: path.join(__dirname, './controllers'),
-    useStubs: process.env.NODE_ENV === 'development' // Conditionally turn on stubs (mock mode)
+    useStubs: process.env.NODE_ENV === 'production' // Conditionally turn on stubs (mock mode)
 };
 
 // The Swagger document (require it, build it programmatically, fetch it from a URL, ...)
@@ -31,13 +31,13 @@ module.exports.knex = connect();
 function connect() {
     // [START gae_flex_postgres_connect]
     const config = {
-        user: settings.SQL_USER,
-        password: settings.SQL_PASSWORD,
-        database: settings.SQL_DATABASE
+        user: process.env.SQL_USER || settings.SQL_USER,
+        password: process.env.SQL_PASSWORD || settings.SQL_PASSWORD,
+        database: process.env.SQL_DATABASE || settings.SQL_DATABASE,
     };
 
-    if (settings.INSTANCE_CONNECTION_NAME && settings.NODE_ENV === 'production') {
-        config.host = `/cloudsql/${settings.INSTANCE_CONNECTION_NAME}`;
+    if (process.env.INSTANCE_CONNECTION_NAME && process.env.NODE_ENV === 'production') {
+        config.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
     }
 
     // Данные подключения к БД

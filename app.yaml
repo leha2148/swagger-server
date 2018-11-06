@@ -6,7 +6,6 @@ env_variables:
   SQL_PASSWORD: P@ssword
   SQL_DATABASE: webdb
   INSTANCE_CONNECTION_NAME: voice-gen-220900:europe-west1:pgsql
-  NODE_ENV: deployment
 
 beta_settings:
   cloud_sql_instances: voice-gen-220900:europe-west1:pgsql
