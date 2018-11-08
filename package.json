@@ -1,12 +1,12 @@
 {
   "name": "api-voice-generation",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "description": "API проекта \"Голос поколения\" для РКН и УМВД Липецкой области.",
   "main": "index.js",
   "scripts": {
     "prestart": "npm install",
     "start": "node index.js",
-    "start-proxy":"! pgrep cloud_sql_proxy > /dev/null && cloud_sql_proxy -instances=$INSTANCE_CONNECTION_NAME=tcp:$SQL_PORT &"
+    "start-proxy": "! pgrep cloud_sql_proxy > /dev/null && cloud_sql_proxy -instances=$INSTANCE_CONNECTION_NAME=tcp:$SQL_PORT &"
   },
   "keywords": [
     "swagger"

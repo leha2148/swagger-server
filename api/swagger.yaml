@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   description: API проекта "Голос поколения" для РКН и УМВД Липецкой области.
-  version: 1.0.0
+  version: 1.3.0
   title: API Voice Generation
   contact:
     email: antony.nor@yandex.ru
@@ -26,31 +26,30 @@ paths:
   # Global
   #
   /public/{imgName}:
-      x-swagger-router-controller: Global
-      get:
-        tags:
-          - global
-        summary: Возвращает картинку из папки public
-        operationId: publicGetImg
-        produces:
-          - image/png
-        parameters:
-          - in: path
-            name: imgName
-            required: true
-            type: string
-            description: Имя картинки
-        responses:
-          200:
-            description: OK
-            schema:
-              type: file
-              description: Возвращаемая картинка в png
-          400:
-            description: Invalid data
-  /sendMsg:
     x-swagger-router-controller: Global
-    post:
+    get:
+      tags:
+        - global
+      summary: Возвращает картинку из папки public
+      operationId: publicGetImg
+      produces:
+        - image/png
+      parameters:
+        - in: path
+          name: imgName
+          required: true
+          type: string
+          description: Имя картинки
+      responses:
+        200:
+          description: OK
+          schema:
+            type: file
+            description: Возвращаемая картинка в png
+        400:
+          description: Invalid data
+  /sendMsg:
+    options:
       tags:
         - global
       summary: Отправить сообщение
@@ -64,23 +63,26 @@ paths:
       parameters:
         - in: body
           name: body
-          description: ID диалога, ID отправителя и текст сообщения
+          description: ID диалога, ID отправителя (или клиента или волонтера) и текст сообщения
           required: true
           schema:
             type: object
             required:
               - dlg_id
-              - sender_id
               - msg_text
             properties:
               dlg_id:
                 type: integer
                 format: int32
                 example: 4
-              sender_id:
+              msg_sendercliid:
                 type: integer
                 format: int32
                 example: 1
+              msg_sendervolid:
+                type: integer
+                format: int32
+                example: null
               msg_text:
                 type: string
                 example: >-
@@ -107,9 +109,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /getLastMsg:
     x-swagger-router-controller: Global
-    post:
+  /getLastMsg:
+    options:
       tags:
         - global
       summary: Получить последнее сообщение в диалоге
@@ -123,22 +125,25 @@ paths:
       parameters:
         - in: body
           name: body
-          description: ID диалога и ID отправителя
+          description: ID диалога и ID отправителя (или клиента или волонтера)
           required: true
           schema:
             type: object
             required:
               - dlg_id
-              - sender_id
             properties:
               dlg_id:
                 type: integer
                 format: int32
                 example: 4
-              sender_id:
+              msg_sendercliid:
                 type: integer
                 format: int32
                 example: 1
+              msg_sendervolid:
+                type: integer
+                format: int32
+                example: null
             xml:
               name: parameters
       responses:
@@ -160,9 +165,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /getDialogMsgs:
     x-swagger-router-controller: Global
-    post:
+  /getDialogMsgs:
+    options:
       tags:
         - global
       summary: Получить все сообщения диалога
@@ -176,22 +181,25 @@ paths:
       parameters:
         - in: body
           name: body
-          description: ID диалога и ID отправителя
+          description: ID диалога и ID отправителя (или клиента или волонтера)
           required: true
           schema:
             type: object
             required:
               - dlg_id
-              - sender_id
             properties:
               dlg_id:
                 type: integer
                 format: int32
                 example: 4
-              sender_id:
+              msg_sendercliid:
                 type: integer
                 format: int32
                 example: 1
+              msg_sendervolid:
+                type: integer
+                format: int32
+                example: null
             xml:
               name: parameters
       responses:
@@ -213,9 +221,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /getDialogInfo:
     x-swagger-router-controller: Global
-    post:
+  /getDialogInfo:
+    options:
       tags:
         - global
       summary: Получить информацию о диалоге
@@ -229,22 +237,25 @@ paths:
       parameters:
         - in: body
           name: body
-          description: ID диалога и ID отправителя
+          description: ID диалога и ID отправителя (или клиента или волонтера)
           required: true
           schema:
             type: object
             required:
               - dlg_id
-              - sender_id
             properties:
               dlg_id:
                 type: integer
                 format: int32
                 example: 4
-              sender_id:
+              msg_sendercliid:
                 type: integer
                 format: int32
                 example: 1
+              msg_sendervolid:
+                type: integer
+                format: int32
+                example: null
             xml:
               name: parameters
       responses:
@@ -269,18 +280,18 @@ paths:
               create_dt:
                 type: string
                 format: date-time
-                example: '2018-11-04T00:42:36-03:00'
+                example: '2018-11-07T10:38:38.172Z'
             xml:
               name: response
         '400':
           description: Invalid data
+    x-swagger-router-controller: Global
   
   #
   # Admin/Volunteer
   #
   /login:
-    x-swagger-router-controller: Adminvolunteer
-    post:
+    options:
       tags:
         - admin/volunteer
       summary: Авторизация в системе для администраторов и волонтеров
@@ -325,7 +336,7 @@ paths:
                 type: integer
                 format: int32
                 example: 2
-              vol_name:
+              vol_fullname:
                 type: string
                 example: Сергиенко Дмитрий Владимирович
               vol_admin:
@@ -335,9 +346,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /getListDialogs:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /getListDialogs:
+    options:
       tags:
         - admin/volunteer
       summary: Получить список диалогов с информацией о них (с теми, у которые никто не обслуживает, но при этом они не привязаны к заявке)
@@ -349,12 +360,23 @@ paths:
         - application/xml
         - application/json
       parameters:
-        - name: sender_id
-          in: query
-          description: 'ID пользователя, чьи диалоги необходимо получить'
+        - in: body
+          name: body
+          description: ID отправителя (или клиента или волонтера)
           required: true
-          type: integer
-          format: int32
+          schema:
+            type: object
+            properties:
+              msg_sendercliid:
+                type: integer
+                format: int32
+                example: 1
+              msg_sendervolid:
+                type: integer
+                format: int32
+                example: null
+            xml:
+              name: parameters
       responses:
         '200':
           description: OK
@@ -392,16 +414,16 @@ paths:
                       create_dt:
                         type: string
                         format: date-time
-                        example: '2018-11-04T01:55:36-03:00'
+                        example: '2018-11-07T10:38:38.172Z'
                     xml:
                       name: dialog_info
             xml:
               name: response
         '400':
           description: Invalid data
-  /getAllQuotes:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /getAllQuotes:
+    options:
       tags:
         - admin/volunteer
       summary: Получить список цитат с подробной информацией
@@ -431,9 +453,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /setQuote:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /setQuote:
+    options:
       tags:
         - admin/volunteer
       summary: Создать цитату
@@ -488,9 +510,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /delQuote:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /delQuote:
+    options:
       tags:
         - admin/volunteer
       summary: Удалить цитату
@@ -522,9 +544,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /updQuote:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /updQuote:
+    options:
       tags:
         - admin/volunteer
       summary: Обновить цитату
@@ -578,9 +600,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /setDialog:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /setDialog:
+    options:
       tags:
         - admin/volunteer
       summary: 'Создание диалога'
@@ -631,9 +653,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /uploadImg:
     x-swagger-router-controller: Adminvolunteer
-    post:
+  /uploadImg:
+    options:
       tags:
         - admin/volunteer
       summary: Получить загрузить картинку
@@ -669,13 +691,13 @@ paths:
           description: Invalid data
         '404':
           description: Not found
+    x-swagger-router-controller: Adminvolunteer
 
   #
   # Client
   #
   /getScreen:
-    x-swagger-router-controller: Client
-    post:
+    options:
       tags:
         - client
       summary: Получить скриншот от сервера
@@ -711,9 +733,9 @@ paths:
               name: response
         '400':
           description: Invalid URL
-  /getClient:
     x-swagger-router-controller: Client
-    post:
+  /getClient:
+    options:
       tags:
         - client
       summary: Создать клиента и получить его ID
@@ -751,9 +773,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /setRequest:
     x-swagger-router-controller: Client
-    post:
+  /setRequest:
+    options:
       tags:
         - client
       summary: Создать заявку по ID клиента
@@ -791,9 +813,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /client/setDialog:
     x-swagger-router-controller: Client
-    post:
+  /client/setDialog:
+    options:
       tags:
         - client
       summary: 'Создание диалога (НЕ привязанного к заявке) клиентом'
@@ -830,9 +852,9 @@ paths:
               name: response
         '400':
           description: Invalid data
-  /setDialogForRqt:
     x-swagger-router-controller: Client
-    post:
+  /setDialogForRqt:
+    options:
       tags:
         - client
       summary: 'Создание диалога, привязанного к заявке'
@@ -883,13 +905,13 @@ paths:
               name: response
         '400':
           description: Invalid data
+    x-swagger-router-controller: Client
   
   #
   # Volunteer
   #
   /getRequest:
-    x-swagger-router-controller: Volunteer
-    post:
+    options:
       tags:
         - volunteer
       summary: Получить необработанную заявку
@@ -915,13 +937,13 @@ paths:
                 $ref: '#/definitions/requestWithClient'
             xml: 
               name: response
+    x-swagger-router-controller: Volunteer
   
   #
   # Admin
   #
   /registration:
-    x-swagger-router-controller: Admin
-    post:
+    options:
       tags:
         - admin
       summary: 'Регистрация волонтера или нового администратора'
@@ -954,7 +976,7 @@ paths:
                 type: integer
                 format: int32
                 example: 2
-              vol_name:
+              vol_fullname:
                 type: string
                 example: 'Сергиенко Дмитрий Владимирович'
               vol_admin:
@@ -964,6 +986,7 @@ paths:
               name: response
         '400':
           description: Invalid data
+    x-swagger-router-controller: Admin
 
 definitions:
   client:
@@ -1119,13 +1142,13 @@ definitions:
         example: >-
           Здравстуйте! Подскажите, пожалуйста, лучший наркологический диспансер
           в Липецке
-      msg_fromyou:
-        type: boolean
-        example: true
       msg_dt:
         type: string
         format: date-time
-        example: '2018-11-04T00:42:36-03:00'
+        example: '2018-11-07T10:35:03.612Z'
+      msg_fromyou:
+        type: boolean
+        example: true
     xml:
       name: message
   quote:

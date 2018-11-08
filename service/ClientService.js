@@ -84,7 +84,7 @@ exports.getClient = function (body, IP) {
         try {
             MethodDB.insertClient(knex, this_cilent)
                 .then((res) => {
-                    console.error(TAG + " -> result: good");
+                    console.log(TAG + " -> result: good");
                     result['application/json'] = {
                         "cli_id": res[0],
                         "status": "OK"

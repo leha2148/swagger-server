@@ -8,7 +8,7 @@ const process = require('process');
 const appConnect = require('connect')();
 const swaggerTools = require('swagger-tools');
 const jsyaml = require('js-yaml');
-const serverPort = process.env.PORT || 3001;
+const serverPort = process.env.PORT || 3000;
 
 const Knex = require('knex');
 const yaml_conf = require('yaml-config');
@@ -46,6 +46,25 @@ function connect() {
         connection: config
     });
 }
+
+appConnect.use(function (req, res, next) {
+
+// Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+// Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+
+// Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+// Set to true if you need the website to include cookies in the requests sent
+// to the API (e.g. in case you use sessions)
+// res.setHeader('Access-Control-Allow-Credentials', true);
+
+// Pass to next layer of middleware
+    next();
+});
 
 // Initialize the Swagger middleware
 swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {

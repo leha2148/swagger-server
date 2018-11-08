@@ -34,5 +34,5 @@ exports.getRequest = function() {
       resolve();
     }
   });
-}
+};
 
