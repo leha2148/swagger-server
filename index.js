@@ -2,8 +2,9 @@
 
 const fs = require('fs'),
     path = require('path'),
+    cors = require('cors'),
     http = require('http');
-
+    
 const process = require('process');
 const appConnect = require('connect')();
 const swaggerTools = require('swagger-tools');
@@ -47,6 +48,7 @@ function connect() {
     });
 }
 
+appConnect.use(cors());
 appConnect.use(function (req, res, next) {
 
 // Website you wish to allow to connect
